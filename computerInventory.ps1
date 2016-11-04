@@ -5,8 +5,7 @@
 
 $logFile = "C:\PSLogs\ComputerInventory.csv"
 $Array = @()
-$Computers =  "IT1-03", "IT1-04"
-# $Computers = (Get-Content "C:\PSScripts\Comps.txt")
+$Computers = (Get-Content "C:\PSScripts\Computers.txt")
 $liveCred = Get-Credential
 
 foreach ($Computer in $Computers) {
@@ -15,12 +14,12 @@ foreach ($Computer in $Computers) {
     $Result = "" | Select PCName,Manufacturer,Model,SerialNumber,MacAddress,IPAddress,RAM,HDDSize,HDDFree,CPU,OS,SP,User,BootTime
 
     # Collect the WMI data
-    $computerSystem = get-wmiobject Win32_ComputerSystem -Computer $Computer -Credential $liveCred
-    $computerBIOS = get-wmiobject Win32_BIOS -Computer $Computer -Credential $liveCred
-    $computerNET = Get-WmiObject -Class "Win32_NetworkAdapterConfiguration" -Filter "IpEnabled = TRUE" -Computer $Computer -Credential $liveCred
-    $computerOS = get-wmiobject Win32_OperatingSystem -Computer $Computer -Credential $liveCred
-    $computerHDD = Get-WmiObject Win32_LogicalDisk -Filter drivetype=3 -ComputerName $Computer -Credential $liveCred
-    $computerCPU = get-wmiobject Win32_Processor
+    $computerSystem = Get-WMIObject Win32_ComputerSystem -Computer $Computer -Credential $liveCred
+    $computerBIOS = Get-WMIObject Win32_BIOS -Computer $Computer -Credential $liveCred
+    $computerNET = Get-WMIObject -Class "Win32_NetworkAdapterConfiguration" -Filter "IpEnabled = TRUE" -Computer $Computer -Credential $liveCred
+    $computerOS = Get-WMIObject Win32_OperatingSystem -Computer $Computer -Credential $liveCred
+    $computerHDD = Get-WMIObject Win32_LogicalDisk -Filter drivetype=3 -ComputerName $Computer -Credential $liveCred
+    $computerCPU = Get-WMIObject Win32_Processor -ComputerName $Computer -Credential $liveCred
 
     # Sort the relevant WMI data into Results
     $Result.PCName = $computerSystem.Name
@@ -33,7 +32,7 @@ foreach ($Computer in $Computers) {
     $Result.HDDSize = "{0:N2}" -f ($computerHDD.Size/1GB)
     $Result.HDDFree = "{0:P2}" -f ($computerHDD.FreeSpace/$computerHDD.Size)
     $Result.CPU = $computerCPU.Name
-    $Result.OS = $computerOS.caption
+    $Result.OS = $computerOS.Caption
     $Result.SP = $computerOS.ServicePackMajorVersion
     $Result.User = $computerSystem.UserName
     $Result.BootTime = $computerOS.ConvertToDateTime($computerOS.LastBootUpTime)
